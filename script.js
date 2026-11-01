@@ -438,7 +438,7 @@ function renderStep3() {
   const sum = $('summary'); sum.innerHTML = '';
   [['Długość', Math.round(L.total / 10.4) + ' s (ok.)'], ['Struktury', state.items.length], ['Kawałki', state.scope === 'sections' ? sec : 'cały level'],
   ['Bloki', c.block], ['Kolce', c.spike], ['Piły / orby / pady', c.saw + c.orb + c.pad]].forEach(([k, v]) => sum.append(h('div', { innerHTML: `${k}<b>${v}</b>` })));
-  $('btnDownload').disabled = !state.items.length;
+  $('btnDownload').disabled = $('btnGmd').disabled = !state.items.length;
   $('dlHint').textContent = state.items.length ? '' : 'Najpierw zbuduj gameplay w kroku 1.';
 }
 function bindForm() {
@@ -475,20 +475,31 @@ async function gzipB64(str) {
   let bin = ''; buf.forEach(b => bin += String.fromCharCode(b));
   return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_');
 }
-async function download() {
-  const data = buildExport();
-  data.levelStringGz = await gzipB64(data.levelString);
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const slug = (data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')) || 'level';
-  const a = h('a', { href: URL.createObjectURL(blob), download: slug + '.gdlvl' });
+const xe = t => String(t).replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
+const b64u = t => btoa(String.fromCharCode(...new TextEncoder().encode(t))).replace(/\+/g, '-').replace(/\//g, '_');
+async function buildGmd() {
+  const d = buildExport(), gz = await gzipB64(d.levelString);
+  const song = d.song.custom !== undefined ? `<k>k45</k><i>${+d.song.custom || 0}</i>` : `<k>k8</k><i>${d.song.id}</i>`;
+  const diff = { auto: 0, easy: 1, normal: 2, hard: 3, harder: 4, insane: 5, demon: 6 }[d.difficulty] || 0;
+  const editor = b64u(JSON.stringify({ name: d.name, author: d.author, description: d.description, difficulty: d.difficulty, song: d.song, editor: d.editor }));
+  return { d, xml: `<?xml version="1.0"?><plist version="1.0" gjver="2.0"><dict><k>kCEK</k><i>4</i><k>k2</k><s>${xe(d.name)}</s><k>k3</k><s>${b64u(d.description || '')}</s><k>k4</k><s>${gz}</s><k>k5</k><s>${xe(d.author)}</s>${song}<k>k13</k><t/><k>k21</k><i>2</i><k>k16</k><i>1</i><k>k80</k><i>0</i><k>k50</k><i>35</i><k>k47</k><t/><k>k42</k><i>0</i><k>k11</k><i>0</i><k>k36</k><i>0</i><k>k23</k><i>${diff}</i></dict></plist><!--GDGEN:${editor}-->` };
+}
+async function download(ext) {
+  const { d, xml } = await buildGmd();
+  const blob = new Blob([xml], { type: 'application/xml' });
+  const slug = (d.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')) || 'level';
+  const a = h('a', { href: URL.createObjectURL(blob), download: slug + ext });
   document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-  $('dlHint').textContent = 'Pobrano ' + slug + '.gdlvl';
+  $('dlHint').textContent = 'Pobrano ' + slug + ext;
 }
 function importFile(file) {
   const r = new FileReader();
   r.onload = () => {
     try {
-      const d = JSON.parse(r.result);
+      let d;
+      const m = /<!--GDGEN:([\w-]+)-->/.exec(r.result);
+      if (m) { const bin = atob(m[1].replace(/-/g, '+').replace(/_/g, '/')); d = JSON.parse(new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0)))); }
+      else d = JSON.parse(r.result);
       if (!d.editor) throw new Error('brak danych edytora');
       state = { ...DEFAULT_STATE(), step: 3, items: d.editor.items, scope: d.editor.scope, deco: d.editor.deco,
         meta: { ...DEFAULT_STATE().meta, name: d.name, author: d.author, desc: d.description || '', diff: d.difficulty || 'normal', song: d.song && d.song.custom !== undefined ? 'custom' : (d.song ? d.song.id : 0), custom: d.song && d.song.custom || '' } };
@@ -553,7 +564,8 @@ function init() {
     const i = $('cv2').L.secs.findIndex(s => x >= s.from && x < s.to);
     if (i >= 0) { state.sel = i; renderStep2(); }
   });
-  $('btnDownload').onclick = download;
+  $('btnDownload').onclick = () => download('.gdlvl');
+  $('btnGmd').onclick = () => download('.gmd');
   $('btnLoad').onclick = () => $('fileLoad').click();
   $('fileLoad').onchange = e => { if (e.target.files[0]) importFile(e.target.files[0]); e.target.value = ''; };
   go(state.step || 1);

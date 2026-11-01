@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GD Generator</title>
-<link rel="stylesheet" href="styles.css?v=1">
+<link rel="stylesheet" href="styles.css?v=2">
 </head>
 <body>
 <header class="top">
@@ -90,8 +90,9 @@
         <label>Opis<textarea id="fDesc" maxlength="140" rows="3" placeholder="Krótki opis (opcjonalnie)"></textarea></label>
         <div class="row">
           <button class="btn big" id="btnDownload">⬇ Pobierz .gdlvl</button>
+          <button class="btn" id="btnGmd">⬇ Pobierz .gmd</button>
           <button class="btn" id="btnLoad">📂 Wczytaj .gdlvl</button>
-          <input type="file" id="fileLoad" accept=".gdlvl,.json" hidden>
+          <input type="file" id="fileLoad" accept=".gdlvl,.gmd,.json" hidden>
         </div>
         <p class="hint" id="dlHint"></p>
       </div>
@@ -110,6 +111,6 @@
   <button class="btn primary" id="btnNext">Dalej →</button>
 </footer>
 
-<script src="script.js?v=1"></script>
+<script src="script.js?v=2"></script>
 </body>
 </html>
