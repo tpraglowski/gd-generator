@@ -482,7 +482,7 @@ function buildExport() {
       else if (p.extra === 'squares') ex = `,32,${(0.3 + rs * .9).toFixed(2)},6,${Math.round(rs * 90)}`;
       else if (p.extra === 'bubbles') ex = `,32,${(0.2 + rs * .5).toFixed(2)},6,45`;
       else if (p.extra === 'lines') ex = `,128,0.1,129,${(4 + rs * 4).toFixed(1)}`;
-      deco.push(`1,1,2,${x},3,${y}${ex},21,1,24,-3,25,0,67,1;`);
+      deco.push(`1,1,2,${x},3,${y}${ex},21,1,24,-3,25,0,121,1,96,1;`);
     }
   });
   const trig = (x, y, ch, hex, d = .5) => { const [r, g, b] = rgb(hex); return `1,899,2,${x},3,${y},36,1,7,${r},8,${g},9,${b},10,${d},35,1,23,${ch};`; };
