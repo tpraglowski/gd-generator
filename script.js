@@ -489,6 +489,11 @@ function buildExport() {
   const trig = (x, y, ch, hex, d = .5) => { const [r, g, b] = rgb(hex); return `1,899,2,${x},3,${y},36,1,7,${r},8,${g},9,${b},10,${d},35,1,23,${ch};`; };
   const palette = p => [[1000, BG[p.bg][0]], [1001, GROUND_COL[p.ground]], [1002, GROUND_LINE[p.ground] || p.color], [1009, GROUND_COL[p.ground]], [1004, p.color], [1, p.color]];
   const trigs = [];
+  L.secs.forEach((sec, si) => {
+    if (si === 0) return;
+    const pp = presetFor(si), tx = sec.from * 30 + 375 - 150;
+    trigs.push(`1,3029,2,${tx},3,${435 + 5 * 30},71,${pp.bgTex},155,1,36,1;`, `1,3030,2,${tx},3,${435 + 6 * 30},71,${pp.groundTex},155,1,36,1;`);
+  });
   L.secs.forEach((sec, si) => { if (si > 0) palette(presetFor(si)).forEach(([ch, hex], i) => trigs.push(trig(sec.from * 30 + 375 - 150, 435 + i * 30, ch, hex))); });
   const chEntry = (id, hex, op = 1) => { const [r, g, b] = rgb(hex); return `1_${r}_2_${g}_3_${b}_11_255_12_255_13_255_4_-1_6_${id}_7_${op}_15_1_18_0_8_1`; };
   const init = palette(presetFor(0)).map(([ch, hex]) => chEntry(ch, hex, ch === 1 ? 0.18 : 1));
