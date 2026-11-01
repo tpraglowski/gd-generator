@@ -26,16 +26,25 @@ const STRUCTS = [
   { id: 'orb', name: 'Orb skokowy', cat: 'special', w: 7, o: [{ t: 'orb', x: 3, y: 2 }, ...spikes(2, 4)] },
   { id: 'saw', name: 'Piła', cat: 'special', w: 4, o: [{ t: 'saw', x: 1, y: 1 }] },
   { id: 'sawrow', name: 'Piły i kolce', cat: 'special', w: 8, o: [{ t: 'saw', x: 1, y: 1 }, S(4, 0), { t: 'saw', x: 6, y: 1 }] },
+  { id: 'block2', name: 'Podwójny blok', cat: 'blocks', w: 4, o: [B(1, 0), B(2, 0)] },
+  { id: 'stairspike', name: 'Schody i kolce', cat: 'blocks', w: 10, o: [B(1, 0), B(2, 0), B(2, 1), B(3, 0), B(3, 1), ...spikes(6, 7)] },
+  { id: 'sawhigh', name: 'Piła nad ziemią', cat: 'special', w: 4, o: [{ t: 'saw', x: 1, y: 2 }] },
+  { id: 'orbpit', name: 'Orby nad kolcami', cat: 'special', w: 10, o: [...spikes(2, 7), { t: 'orb', x: 3, y: 2 }, { t: 'orb', x: 6, y: 2 }] },
+  { id: 'padplat', name: 'Pad i platforma', cat: 'special', w: 9, o: [{ t: 'pad', x: 1, y: 0 }, ...spikes(3, 7), ...row(4, 6, 2)] },
   { id: 'shipin', name: 'Portal: statek', cat: 'ship', w: 3, o: [{ t: 'portal', x: 1, y: 2, m: 'ship' }, ...row(1, 2, 9)] },
   { id: 'shiptunnel', name: 'Tunel statku', cat: 'ship', w: 10, o: [...row(0, 9, 9), S(3, 0), S(7, 0), S(5, 8, 180)] },
   { id: 'shipblocks', name: 'Statek: bloki', cat: 'ship', w: 11, o: [...row(0, 10, 9), ...col(2, 0, 2), ...col(5, 6, 8), ...col(8, 0, 2)] },
   { id: 'shipzig', name: 'Statek: zygzak', cat: 'ship', w: 15, o: [...row(0, 14, 9), ...zigzag([0, 0, 1, 1, 2, 2, 3, 3, 3, 2, 2, 1, 1, 0, 0])] },
+  { id: 'shipnarrow', name: 'Statek: wąski tunel', cat: 'ship', w: 10, o: [...row(0, 9, 9), ...zigzag([2, 2, 2, 2, 2, 2, 2, 2, 2, 2])] },
+  { id: 'shipclimb', name: 'Statek: schody', cat: 'ship', w: 12, o: [...row(0, 11, 9), ...zigzag([0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 4])] },
+  { id: 'shipspikes', name: 'Statek: kolce', cat: 'ship', w: 12, o: [...row(0, 11, 9), S(2, 0), S(5, 8, 180), S(8, 0), S(11, 8, 180)] },
+  { id: 'shipsaws', name: 'Statek: piły', cat: 'ship', w: 14, o: [...row(0, 13, 9), { t: 'saw', x: 3, y: 2 }, { t: 'saw', x: 7, y: 6 }, { t: 'saw', x: 11, y: 3 }] },
   { id: 'shipout', name: 'Portal: kostka', cat: 'ship', w: 3, o: [{ t: 'portal', x: 1, y: 2, m: 'cube' }, B(0, 9)] },
 ];
 const SBY = Object.fromEntries(STRUCTS.map(s => [s.id, s]));
 const CATS = [['all', 'Wszystkie'], ['basic', 'Podstawowe'], ['spikes', 'Kolce'], ['blocks', 'Bloki'], ['special', 'Specjalne'], ['ship', 'Statek']];
 const CUBE_POOL = STRUCTS.filter(s => !['ship', 'basic'].includes(s.cat)).map(s => s.id);
-const SHIP_POOL = ['shiptunnel', 'shipblocks', 'shipzig'];
+const SHIP_POOL = ['shiptunnel', 'shipblocks', 'shipzig', 'shipnarrow', 'shipclimb', 'shipspikes', 'shipsaws'];
 
 /* ---------- dane: dekoracje ---------- */
 const OPTIONS = {
