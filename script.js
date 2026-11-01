@@ -467,6 +467,15 @@ function buildExport() {
   });
   // dekoracje tła: nieinteraktywne bloki na kanale 1 (półprzezroczysty kolor akcentu)
   const deco = [];
+  // styl orba/pada: nakładka z dekoracji (gwiazda / pierścień) bez kolizji, nad obiektem
+  L.objs.forEach(o => {
+    if (o.t !== 'orb' && o.t !== 'pad') return;
+    const st = presetFor(o.sec).orb;
+    if (st === 'classic') return;
+    const x = 375 + o.x * 30, y = 15 + o.y * 30 + (o.t === 'pad' ? -9 : 0);
+    const star = st === 'star', sc = o.t === 'pad' ? (star ? 0.3 : 0.7) : (star ? 0.5 : 1.3);
+    deco.push(`1,${star ? 3827 : 3807},2,${x},3,${y},128,${sc},129,${sc},21,${chanOf(star ? '#ffd400' : 'acc')},24,3,25,5,121,1,96,1;`);
+  });
   L.secs.forEach((sec, si) => {
     const p = presetFor(si);
     if (p.extra === 'none') return;
