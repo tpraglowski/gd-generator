@@ -43,20 +43,17 @@ const OPTIONS = {
   orb: { label: 'Orb i pad', list: [['classic', 'Klasyczny'], ['ring', 'Pierścień'], ['star', 'Gwiazda']] },
   ground: { label: 'Kolor podłoża', list: [['line', 'Linia'], ['grass', 'Trawa'], ['stone', 'Kamień'], ['lava', 'Lawa'], ['neon', 'Neon'], ['snow', 'Śnieg']] },
   bg: { label: 'Kolor tła', list: [['blue', 'Niebieskie'], ['purple', 'Fiolet'], ['sunset', 'Zachód'], ['dark', 'Ciemne'], ['green', 'Zielone'], ['red', 'Czerwone'], ['cyan', 'Turkus']] },
-  bgTex: { label: 'Tło z GD (numer)', list: Array.from({ length: 20 }, (_, i) => [i + 1, 'Tło ' + (i + 1)]) },
-  groundTex: { label: 'Podłoże z GD (numer)', list: Array.from({ length: 20 }, (_, i) => [i + 1, 'Podł. ' + (i + 1)]) },
   extra: { label: 'Dodatki w tle', list: [['none', 'Brak'], ['stars', 'Gwiazdy'], ['squares', 'Kwadraty'], ['bubbles', 'Bąbelki'], ['lines', 'Linie']] },
 };
 const BG = { blue: ['#1e3c9e', '#0a1550'], purple: ['#6a22b5', '#1c0a40'], sunset: ['#ff8a3d', '#7a1f6b'], dark: ['#2a2a30', '#050505'], green: ['#22b050', '#07391b'], red: ['#c4202f', '#3a050a'], cyan: ['#18c4d6', '#064a63'] };
 const COLORS = ['#38d6ff', '#ffd23a', '#3cff7a', '#ff4ad1', '#ff5a3d', '#ffffff', '#9b6bff'];
-const DEFAULT_PRESET = { block: 'classic', spike: 'classic', saw: 'classic', orb: 'classic', ground: 'line', bg: 'blue', bgTex: 1, groundTex: 1, extra: 'none', color: '#38d6ff' };
+const DEFAULT_PRESET = { block: 'classic', spike: 'classic', saw: 'classic', orb: 'classic', ground: 'line', bg: 'blue', extra: 'none', color: '#38d6ff' };
 const SEC_COLORS = ['#38d6ff', '#ffd23a', '#3cff7a', '#ff4ad1', '#ff7a3d', '#9b6bff', '#ff4d6d', '#7affd0'];
 const SONGS = ['Stereo Madness', 'Back on Track', 'Polargeist', 'Dry Out', 'Base After Base', "Can't Let Go", 'Jumper', 'Time Machine', 'Cycles', 'xStep', 'Clutterfunk', 'Theory of Everything', 'Electroman Adventures', 'Clubstep', 'Electrodynamix', 'Hexagon Force', 'Blast Processing', 'Theory of Everything 2', 'Geometrical Dominator', 'Deadlocked', 'Fingerdash'];
 const BLOCK_GD = { classic: [1, null], neon: [2, 'acc'], brick: [3, '#b5502f'], ice: [4, '#9fe3ff'], lava: [5, '#ff5a00'], tech: [6, 'acc'], wood: [7, '#8a5a2b'], gold: [1, '#ffd23a'], candy: [2, '#ff7aa8'] };
 const SPIKE_COL = { classic: null, neon: 'acc', crystal: 'acc', fire: '#ff7a1a', ice: '#9fe3ff', thorn: '#3aa04a', bone: '#f2ead8' };
 const SAW_COL = { classic: null, gear: '#9aa4b0', star: 'acc', neon: 'acc' };
-const GROUND_TEX = { line: 1, grass: 2, stone: 3, lava: 4, neon: 5, snow: 6 };
-const BG_TEX = { blue: 1, purple: 2, sunset: 3, dark: 4, green: 5, red: 6, cyan: 7 };
+const GROUND_TEX = { line: 18, grass: 9, stone: 3, lava: 17, neon: 18, snow: 8 };
 const GROUND_LINE = { neon: '#7fdcff', lava: '#ffb347' };
 const GROUND_COL = { line: '#0a0a1c', grass: '#6b4423', stone: '#5a606c', lava: '#ff6a00', neon: '#000000', snow: '#8fc4ee' };
 const GD_ID = { block: 1, spike: 8, saw: 88, pad: 35, orb: 36, portalcube: 12, portalship: 13 };
@@ -333,7 +330,6 @@ function thumbOption(cv, key, val, color) {
   else if (key === 'orb') { drawOrb(c, val, 4, 6, 28, color); drawPad(c, val, 28, 6, 24, color); }
   else if (key === 'ground') drawGround(c, val, 0, 56, 40, 14, 14, color);
   else if (key === 'bg') drawBg(c, val, 'none', 0, 56, 40, 40, color);
-  else if (key === 'bgTex' || key === 'groundTex') { c.fillStyle = '#0c1240'; c.fillRect(0, 0, 56, 40); c.fillStyle = '#fff'; c.font = '700 18px Segoe UI'; c.textAlign = 'center'; c.fillText(val, 28, 27); }
   else if (key === 'extra') { drawBg(c, 'blue', val, 0, 56, 40, 40, color); }
 }
 
@@ -388,8 +384,6 @@ function randomLevel() {
 function secCount() { return buildLayout(state.items).secs.length; }
 function curPreset() { return { ...DEFAULT_PRESET, ...(state.scope === 'whole' ? state.deco.global : (state.deco.sections[state.sel] || state.deco.global)) }; }
 function editPreset(k, v) {
-  if (k === 'ground') editPreset('groundTex', GROUND_TEX[v]);
-  if (k === 'bg') editPreset('bgTex', BG_TEX[v]);
   if (state.scope === 'whole') state.deco.global[k] = v;
   else { if (!state.deco.sections[state.sel]) state.deco.sections[state.sel] = { ...state.deco.global }; state.deco.sections[state.sel][k] = v; }
   changed(false);
@@ -495,14 +489,14 @@ function buildExport() {
   const trigs = [];
   L.secs.forEach((sec, si) => {
     if (si === 0) return;
-    const pp = presetFor(si), tx = sec.from * 30 + 375 - 150;
-    trigs.push(`1,3029,2,${tx},3,${435 + 5 * 30},71,${pp.bgTex},155,1,36,1;`, `1,3030,2,${tx},3,${435 + 6 * 30},71,${pp.groundTex},155,1,36,1;`);
+    const g = presetFor(si).ground;
+    if (g !== presetFor(si - 1).ground) trigs.push(`1,3030,2,${sec.from * 30 + 375 - 150},3,${435 + 5 * 30},533,${GROUND_TEX[g]},155,1,36,1;`);
   });
   L.secs.forEach((sec, si) => { if (si > 0) palette(presetFor(si)).forEach(([ch, hex], i) => trigs.push(trig(sec.from * 30 + 375 - 150, 435 + i * 30, ch, hex))); });
   const chEntry = (id, hex, op = 1) => { const [r, g, b] = rgb(hex); return `1_${r}_2_${g}_3_${b}_11_255_12_255_13_255_4_-1_6_${id}_7_${op}_15_1_18_0_8_1`; };
   const init = palette(presetFor(0)).map(([ch, hex]) => chEntry(ch, hex, ch === 1 ? 0.18 : 1));
   Object.entries(chans).forEach(([hex, id]) => init.push(chEntry(id, hex)));
-  const header = `kS38,${init.join('|')}|;kA13,0;kA15,0;kA16,0;kA14,;kA6,${presetFor(0).bgTex};kA7,${presetFor(0).groundTex};kA17,0;kA18,0;kS39,0;kA2,0;kA3,0;kA8,0;kA4,0;kA9,0;kA10,0;kA11,0;;`;
+  const header = `kS38,${init.join('|')}|;kA13,0;kA15,0;kA16,0;kA14,;kA6,0;kA7,${GROUND_TEX[presetFor(0).ground]};kA17,0;kA18,0;kS39,0;kA2,0;kA3,0;kA8,0;kA4,0;kA9,0;kA10,0;kA11,0;;`;
   const levelString = header
     + objects.map(o => `1,${o.gdId},2,${o.x},3,${o.y}` + (o.rot ? `,6,${o.rot}` : '') + (o.ch ? `,21,${o.ch}` : '') + ';').join('')
     + deco.join('') + trigs.join('');
