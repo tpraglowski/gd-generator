@@ -74,18 +74,31 @@ function load() {
 }
 
 /* ---------- layout ---------- */
+const CEIL_ROW = 9;
+const hasCeil = st => st.o.some(o => o.t === 'block' && o.y === CEIL_ROW);
 const START = 10, END = 8, ROWS = 11;
 function buildLayout(items) {
-  const objs = [], secs = [];
+  const objs = [], secs = [], spans = [];
   let c = START, from = 0, si = 0;
   items.forEach((it, i) => {
     const s = SBY[it.sid];
     s.o.forEach(o => objs.push({ ...o, x: c + o.x, sec: si }));
+    spans.push({ from: c, to: c + s.w, sec: si, join: !it.nojoin });
     c += s.w;
     if (it.cut && i < items.length - 1) { secs.push({ from, to: c }); from = c; si++; }
   });
   c += END;
   secs.push({ from, to: c });
+  // dach statku: wypełnij przerwy między strukturami (chyba że wyłączone przy danym złączeniu)
+  const ceil = [...new Set(objs.filter(o => o.t === 'block' && o.y === CEIL_ROW).map(o => o.x))].sort((a, b) => a - b);
+  for (let k = 0; k + 1 < ceil.length; k++) {
+    const a = ceil[k], b = ceil[k + 1];
+    if (b <= a + 1) continue;
+    const juncs = spans.slice(0, -1).filter(sp => sp.to > a && sp.to <= b);
+    if (!juncs.length || juncs.some(j => !j.join)) continue;
+    if (objs.some(o => o.t === 'portal' && o.m === 'cube' && o.x > a && o.x <= b)) continue;
+    for (let x = a + 1; x < b; x++) objs.push({ t: 'block', x, y: CEIL_ROW, sec: (spans.find(sp => x >= sp.from && x < sp.to) || spans[spans.length - 1]).sec });
+  }
   return { objs, secs, total: c };
 }
 function presetFor(si) {
@@ -360,6 +373,12 @@ function renderTimeline() {
     chip.style.borderBottomColor = SEC_COLORS[si % SEC_COLORS.length];
     tl.append(chip);
     if (i < state.items.length - 1) {
+      const nx = SBY[state.items[i + 1].sid];
+      if (hasCeil(st) || hasCeil(nx)) {
+        const jn = h('button', { className: 'cut join' + (it.nojoin ? '' : ' on'), textContent: '▔', title: it.nojoin ? 'Dach statku przerwany — kliknij, aby połączyć' : 'Dach statku połączony przez przerwę — kliknij, aby przerwać' });
+        jn.onclick = () => { it.nojoin = !it.nojoin; changed(); };
+        tl.append(jn);
+      }
       const cut = h('button', { className: 'cut' + (it.cut ? ' on' : ''), textContent: '✂', title: 'Koniec kawałka' });
       cut.onclick = () => { it.cut = !it.cut; changed(); };
       tl.append(cut);

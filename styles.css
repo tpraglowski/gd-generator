@@ -89,3 +89,4 @@ input[type=color]{width:34px;height:30px;padding:0;border:2px solid var(--line);
 
 .logo-t{display:flex;flex-direction:column;line-height:1.05}
 .ver{font-size:.65rem;font-weight:600;color:var(--muted);letter-spacing:.5px}
+.cut.join{height:46px}.cut.join.on{background:var(--accent);color:#04223a;border:2px solid #fff;border-style:solid}
