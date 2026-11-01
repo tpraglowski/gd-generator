@@ -50,6 +50,10 @@ const COLORS = ['#38d6ff', '#ffd23a', '#3cff7a', '#ff4ad1', '#ff5a3d', '#ffffff'
 const DEFAULT_PRESET = { block: 'classic', spike: 'classic', saw: 'classic', orb: 'classic', ground: 'line', bg: 'blue', extra: 'none', color: '#38d6ff' };
 const SEC_COLORS = ['#38d6ff', '#ffd23a', '#3cff7a', '#ff4ad1', '#ff7a3d', '#9b6bff', '#ff4d6d', '#7affd0'];
 const SONGS = ['Stereo Madness', 'Back on Track', 'Polargeist', 'Dry Out', 'Base After Base', "Can't Let Go", 'Jumper', 'Time Machine', 'Cycles', 'xStep', 'Clutterfunk', 'Theory of Everything', 'Electroman Adventures', 'Clubstep', 'Electrodynamix', 'Hexagon Force', 'Blast Processing', 'Theory of Everything 2', 'Geometrical Dominator', 'Deadlocked', 'Fingerdash'];
+const BLOCK_GD = { classic: [1, null], neon: [2, 'acc'], brick: [3, '#b5502f'], ice: [4, '#9fe3ff'], lava: [5, '#ff5a00'], tech: [6, 'acc'], wood: [7, '#8a5a2b'], gold: [1, '#ffd23a'], candy: [2, '#ff7aa8'] };
+const SPIKE_COL = { classic: null, neon: 'acc', crystal: 'acc', fire: '#ff7a1a', ice: '#9fe3ff', thorn: '#3aa04a', bone: '#f2ead8' };
+const SAW_COL = { classic: null, gear: '#9aa4b0', star: 'acc', neon: 'acc' };
+const GROUND_COL = { line: '#0a0a1c', grass: '#6b4423', stone: '#5a606c', lava: '#ff6a00', neon: '#07071e', snow: '#8fc4ee' };
 const GD_ID = { block: 1, spike: 8, saw: 88, pad: 35, orb: 36, portalcube: 12, portalship: 13 };
 
 /* ---------- stan ---------- */
@@ -451,14 +455,47 @@ function bindForm() {
 /* ---------- eksport / import ---------- */
 function buildExport() {
   const L = buildLayout(state.items), m = state.meta;
+  const chans = {}, chanOf = v => v === 'acc' ? 1004 : (chans[v] = chans[v] || 11 + Object.keys(chans).length);
   const objects = L.objs.map(o => {
     const p = presetFor(o.sec);
-    const key = o.t === 'portal' ? 'portal' + o.m : o.t;
-    const deco = o.t === 'portal' ? null : p[o.t === 'pad' ? 'orb' : o.t];
-    return { type: o.t, gdId: GD_ID[key], x: 375 + o.x * 30, y: 15 + o.y * 30, rot: o.r || 0, section: o.sec, style: deco, color: p.color };
+    let id, c = null;
+    if (o.t === 'block') [id, c] = BLOCK_GD[p.block];
+    else if (o.t === 'spike') { id = 8; c = SPIKE_COL[p.spike]; }
+    else if (o.t === 'saw') { id = 88; c = SAW_COL[p.saw]; }
+    else if (o.t === 'portal') id = GD_ID['portal' + o.m];
+    else id = GD_ID[o.t];
+    const style = o.t === 'portal' ? null : p[o.t === 'pad' ? 'orb' : o.t];
+    return { type: o.t, gdId: id, x: 375 + o.x * 30, y: 15 + o.y * 30, rot: o.r || 0, section: o.sec, style, color: p.color, ch: c ? chanOf(c) : null };
   });
-  const levelString = 'kS38,1_40_2_125_3_255_11_255_12_255_13_255_4_-1_6_1000_7_1_15_1_18_0_8_1|1_0_2_102_3_255_11_255_12_255_13_255_4_-1_6_1001_7_1_15_1_18_0_8_1|;kA13,0;kA15,0;kA16,0;kA14,;kA6,0;kA7,0;kA17,0;kA18,0;kS39,0;kA2,0;kA3,0;kA8,0;kA4,0;kA9,0;kA10,0;kA11,0;;'
-    + objects.map(o => `1,${o.gdId},2,${o.x},3,${o.y}` + (o.rot ? `,6,${o.rot}` : '') + ';').join('');
+  // dekoracje tła: nieinteraktywne bloki na kanale 1 (półprzezroczysty kolor akcentu)
+  const deco = [];
+  L.secs.forEach((sec, si) => {
+    const p = presetFor(si);
+    if (p.extra === 'none') return;
+    const x0 = sec.from * 30 + 375, x1 = sec.to * 30 + 375;
+    for (let k = Math.floor(x0 / 60), r; k * 60 < x1; k++) {
+      const rx = (k * 7919 % 1000) / 1000, ry = (k * 104729 % 1000) / 1000, rs = (k * 31 % 100) / 100;
+      const x = Math.round(k * 60 + rx * 50), y = Math.round(60 + ry * 330);
+      if (x < x0 || x >= x1) continue;
+      let ex = '';
+      if (p.extra === 'stars') ex = `,32,${(0.08 + rs * .12).toFixed(2)}`;
+      else if (p.extra === 'squares') ex = `,32,${(0.3 + rs * .9).toFixed(2)},6,${Math.round(rs * 90)}`;
+      else if (p.extra === 'bubbles') ex = `,32,${(0.2 + rs * .5).toFixed(2)},6,45`;
+      else if (p.extra === 'lines') ex = `,128,0.1,129,${(4 + rs * 4).toFixed(1)}`;
+      deco.push(`1,1,2,${x},3,${y}${ex},21,1,24,-3,25,0,67,1;`);
+    }
+  });
+  const trig = (x, y, ch, hex, d = .5) => { const [r, g, b] = rgb(hex); return `1,899,2,${x},3,${y},36,1,7,${r},8,${g},9,${b},10,${d},35,1,23,${ch};`; };
+  const palette = p => [[1000, BG[p.bg][0]], [1001, GROUND_COL[p.ground]], [1002, p.color], [1004, p.color], [1, p.color]];
+  const trigs = [];
+  L.secs.forEach((sec, si) => { if (si > 0) palette(presetFor(si)).forEach(([ch, hex], i) => trigs.push(trig(sec.from * 30 + 375 - 150, 435 + i * 30, ch, hex))); });
+  const chEntry = (id, hex, op = 1) => { const [r, g, b] = rgb(hex); return `1_${r}_2_${g}_3_${b}_11_255_12_255_13_255_4_-1_6_${id}_7_${op}_15_1_18_0_8_1`; };
+  const init = palette(presetFor(0)).map(([ch, hex]) => chEntry(ch, hex, ch === 1 ? 0.18 : 1));
+  Object.entries(chans).forEach(([hex, id]) => init.push(chEntry(id, hex)));
+  const header = `kS38,${init.join('|')}|;kA13,0;kA15,0;kA16,0;kA14,;kA6,0;kA7,0;kA17,0;kA18,0;kS39,0;kA2,0;kA3,0;kA8,0;kA4,0;kA9,0;kA10,0;kA11,0;;`;
+  const levelString = header
+    + objects.map(o => `1,${o.gdId},2,${o.x},3,${o.y}` + (o.rot ? `,6,${o.rot}` : '') + (o.ch ? `,21,${o.ch}` : '') + ';').join('')
+    + deco.join('') + trigs.join('');
   const song = m.song === 'custom' ? { custom: m.custom } : { id: m.song, name: SONGS[m.song] };
   return {
     format: 'gdlvl', version: 1, generator: 'GD Generator',
