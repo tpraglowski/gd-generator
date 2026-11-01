@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GD Generator</title>
+<link rel="stylesheet" href="styles.css?v=1">
+</head>
+<body>
+<header class="top">
+  <div class="logo"><span class="logo-cube"></span> GD <b>Generator</b></div>
+  <nav class="stepper" id="stepper">
+    <button data-step="1" class="active"><i>1</i> Gameplay</button>
+    <button data-step="2"><i>2</i> Dekoracje</button>
+    <button data-step="3"><i>3</i> Zapis</button>
+  </nav>
+</header>
+
+<main>
+  <!-- KROK 1 -->
+  <section id="step1" class="step active">
+    <div class="split">
+      <aside class="panel palette">
+        <h2>Struktury</h2>
+        <div class="tabs" id="catTabs"></div>
+        <div class="cards" id="cards"></div>
+      </aside>
+      <div class="panel build">
+        <div class="bar">
+          <h2>Twój level</h2>
+          <span class="muted" id="stats"></span>
+          <span class="grow"></span>
+          <button class="btn" id="btnRandom">🎲 Losuj</button>
+          <button class="btn" id="btnPlay">▶ Podgląd</button>
+          <button class="btn danger" id="btnClear">Wyczyść</button>
+        </div>
+        <div class="preview" id="prev1"><canvas id="cv1"></canvas></div>
+        <p class="hint">Kliknij strukturę po lewej, aby dodać ją na koniec. Między strukturami jest nożyczki ✂ — kliknij, aby zaznaczyć <b>koniec kawałka</b> (kawałki dostaną osobne dekoracje w kroku 2).</p>
+        <div class="timeline" id="timeline"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- KROK 2 -->
+  <section id="step2" class="step">
+    <div class="split">
+      <aside class="panel decopanel">
+        <h2>Dekoracje</h2>
+        <div class="seg" id="scopeSeg">
+          <button data-scope="whole" class="active">Cały level</button>
+          <button data-scope="sections">Wybrane kawałki</button>
+        </div>
+        <div id="secBox" hidden>
+          <div class="secs" id="secList"></div>
+          <div class="muted" id="secInfo"></div>
+          <button class="btn small" id="btnInherit">Użyj stylu z całego levelu</button>
+        </div>
+        <div id="options"></div>
+      </aside>
+      <div class="panel build">
+        <div class="bar">
+          <h2>Podgląd</h2>
+          <span class="muted" id="prevInfo"></span>
+          <span class="grow"></span>
+          <button class="btn" id="btnPlay2">▶ Podgląd</button>
+        </div>
+        <div class="preview tall" id="prev2"><canvas id="cv2"></canvas></div>
+        <p class="hint" id="hint2"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- KROK 3 -->
+  <section id="step3" class="step">
+    <div class="split">
+      <div class="panel form">
+        <h2>Dane levelu</h2>
+        <label>Nazwa levelu<input id="fName" maxlength="20" placeholder="np. Neon Rush"></label>
+        <label>Autor<input id="fAuthor" maxlength="20" placeholder="Twój nick"></label>
+        <label>Muzyka
+          <select id="fSong"></select>
+        </label>
+        <label id="customSongRow" hidden>ID piosenki z Newgrounds<input id="fCustom" inputmode="numeric" placeholder="np. 467339"></label>
+        <label>Trudność
+          <select id="fDiff">
+            <option value="auto">Auto</option><option value="easy">Easy</option><option value="normal" selected>Normal</option>
+            <option value="hard">Hard</option><option value="harder">Harder</option><option value="insane">Insane</option><option value="demon">Demon</option>
+          </select>
+        </label>
+        <label>Opis<textarea id="fDesc" maxlength="140" rows="3" placeholder="Krótki opis (opcjonalnie)"></textarea></label>
+        <div class="row">
+          <button class="btn big" id="btnDownload">⬇ Pobierz .gdlvl</button>
+          <button class="btn" id="btnLoad">📂 Wczytaj .gdlvl</button>
+          <input type="file" id="fileLoad" accept=".gdlvl,.json" hidden>
+        </div>
+        <p class="hint" id="dlHint"></p>
+      </div>
+      <div class="panel build">
+        <div class="bar"><h2>Gotowy level</h2><span class="grow"></span><button class="btn" id="btnPlay3">▶ Podgląd</button></div>
+        <div class="preview tall" id="prev3"><canvas id="cv3"></canvas></div>
+        <div class="summary" id="summary"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="nav">
+  <button class="btn" id="btnBack">← Wstecz</button>
+  <span class="grow"></span>
+  <button class="btn primary" id="btnNext">Dalej →</button>
+</footer>
+
+<script src="script.js?v=1"></script>
+</body>
+</html>
