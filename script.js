@@ -477,12 +477,13 @@ function buildExport() {
       const rx = (k * 7919 % 1000) / 1000, ry = (k * 104729 % 1000) / 1000, rs = (k * 31 % 100) / 100;
       const x = Math.round(k * 60 + rx * 50), y = Math.round(60 + ry * 330);
       if (x < x0 || x >= x1) continue;
-      let ex = '';
-      if (p.extra === 'stars') ex = `,32,${(0.08 + rs * .12).toFixed(2)}`;
-      else if (p.extra === 'squares') ex = `,32,${(0.3 + rs * .9).toFixed(2)},6,${Math.round(rs * 90)}`;
-      else if (p.extra === 'bubbles') ex = `,32,${(0.2 + rs * .5).toFixed(2)},6,45`;
-      else if (p.extra === 'lines') ex = `,128,0.1,129,${(4 + rs * 4).toFixed(1)}`;
-      deco.push(`1,1,2,${x},3,${y}${ex},21,1,24,-3,25,0,121,1,96,1;`);
+      const sc = v => `,128,${v},129,${v}`;
+      let id = 211, ex = '';
+      if (p.extra === 'stars') { id = 3827; ex = sc((0.15 + rs * .35).toFixed(2)); }
+      else if (p.extra === 'squares') ex = sc((0.5 + rs * 1.5).toFixed(2)) + `,6,${Math.round(rs * 90)}`;
+      else if (p.extra === 'bubbles') { id = 3807; ex = sc((1.5 + rs * 3.5).toFixed(2)); }
+      else if (p.extra === 'lines') ex = `,128,0.063,129,${(5 + rs * 7).toFixed(1)}`;
+      deco.push(`1,${id},2,${x},3,${y}${ex},21,1,24,-3,25,0,121,1,96,1;`);
     }
   });
   const trig = (x, y, ch, hex, d = .5) => { const [r, g, b] = rgb(hex); return `1,899,2,${x},3,${y},36,1,7,${r},8,${g},9,${b},10,${d},35,1,23,${ch};`; };
