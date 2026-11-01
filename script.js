@@ -55,6 +55,8 @@ const SONGS = ['Stereo Madness', 'Back on Track', 'Polargeist', 'Dry Out', 'Base
 const BLOCK_GD = { classic: [1, null], neon: [2, 'acc'], brick: [3, '#b5502f'], ice: [4, '#9fe3ff'], lava: [5, '#ff5a00'], tech: [6, 'acc'], wood: [7, '#8a5a2b'], gold: [1, '#ffd23a'], candy: [2, '#ff7aa8'] };
 const SPIKE_COL = { classic: null, neon: 'acc', crystal: 'acc', fire: '#ff7a1a', ice: '#9fe3ff', thorn: '#3aa04a', bone: '#f2ead8' };
 const SAW_COL = { classic: null, gear: '#9aa4b0', star: 'acc', neon: 'acc' };
+const GROUND_TEX = { line: 1, grass: 2, stone: 3, lava: 4, neon: 5, snow: 6 };
+const BG_TEX = { blue: 1, purple: 2, sunset: 3, dark: 4, green: 5, red: 6, cyan: 7 };
 const GROUND_LINE = { neon: '#7fdcff', lava: '#ffb347' };
 const GROUND_COL = { line: '#0a0a1c', grass: '#6b4423', stone: '#5a606c', lava: '#ff6a00', neon: '#000000', snow: '#8fc4ee' };
 const GD_ID = { block: 1, spike: 8, saw: 88, pad: 35, orb: 36, portalcube: 12, portalship: 13 };
@@ -386,6 +388,8 @@ function randomLevel() {
 function secCount() { return buildLayout(state.items).secs.length; }
 function curPreset() { return { ...DEFAULT_PRESET, ...(state.scope === 'whole' ? state.deco.global : (state.deco.sections[state.sel] || state.deco.global)) }; }
 function editPreset(k, v) {
+  if (k === 'ground') editPreset('groundTex', GROUND_TEX[v]);
+  if (k === 'bg') editPreset('bgTex', BG_TEX[v]);
   if (state.scope === 'whole') state.deco.global[k] = v;
   else { if (!state.deco.sections[state.sel]) state.deco.sections[state.sel] = { ...state.deco.global }; state.deco.sections[state.sel][k] = v; }
   changed(false);
