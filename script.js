@@ -6,6 +6,8 @@ const row = (x0, x1, y) => { const a = []; for (let x = x0; x <= x1; x++) a.push
 const col = (x, y0, y1) => { const a = []; for (let y = y0; y <= y1; y++) a.push(B(x, y)); return a; };
 const spikes = (x0, x1, y = 0, r = 0) => { const a = []; for (let x = x0; x <= x1; x++) a.push(S(x, y, r)); return a; };
 
+// kanał statku o wysokości 4: dla każdej kolumny podajesz dolną krawędź, filary dobudowują się od podłogi i od dachu
+const zigzag = lows => lows.flatMap((lo, x) => [...col(x, 0, lo - 1), ...col(x, lo + 4, 8)]);
 const STRUCTS = [
   { id: 'flat', name: 'Płaski odcinek', cat: 'basic', w: 4, o: [] },
   { id: 'spike1', name: 'Kolec', cat: 'spikes', w: 3, o: [S(1, 0)] },
@@ -26,8 +28,8 @@ const STRUCTS = [
   { id: 'sawrow', name: 'Piły i kolce', cat: 'special', w: 8, o: [{ t: 'saw', x: 1, y: 1 }, S(4, 0), { t: 'saw', x: 6, y: 1 }] },
   { id: 'shipin', name: 'Portal: statek', cat: 'ship', w: 3, o: [{ t: 'portal', x: 1, y: 2, m: 'ship' }, ...row(1, 2, 9)] },
   { id: 'shiptunnel', name: 'Tunel statku', cat: 'ship', w: 10, o: [...row(0, 9, 9), S(3, 0), S(7, 0), S(5, 8, 180)] },
-  { id: 'shipblocks', name: 'Statek: bloki', cat: 'ship', w: 10, o: [...row(0, 9, 9), ...col(3, 0, 3), ...col(7, 5, 8)] },
-  { id: 'shipzig', name: 'Statek: zygzak', cat: 'ship', w: 12, o: [...row(0, 11, 9), ...col(2, 0, 4), ...col(5, 4, 8), ...col(8, 0, 4), S(11, 0)] },
+  { id: 'shipblocks', name: 'Statek: bloki', cat: 'ship', w: 11, o: [...row(0, 10, 9), ...col(2, 0, 2), ...col(5, 6, 8), ...col(8, 0, 2)] },
+  { id: 'shipzig', name: 'Statek: zygzak', cat: 'ship', w: 15, o: [...row(0, 14, 9), ...zigzag([0, 0, 1, 1, 2, 2, 3, 3, 3, 2, 2, 1, 1, 0, 0])] },
   { id: 'shipout', name: 'Portal: kostka', cat: 'ship', w: 3, o: [{ t: 'portal', x: 1, y: 2, m: 'cube' }, B(0, 9)] },
 ];
 const SBY = Object.fromEntries(STRUCTS.map(s => [s.id, s]));
